@@ -20,36 +20,17 @@ import {
 } from '@loopback/rest';
 import {Book} from '../models';
 import {BookRepository,AuthorRepository,CategoryRepository} from '../repositories';
+import {inject} from '@loopback/core';
+import { BookService } from '../services/book.service';
 
 export class BookController {
   constructor(
     @repository(BookRepository)
     public bookRepository : BookRepository,
-    @repository(AuthorRepository)
-    public authorRepository: AuthorRepository,
-    @repository(CategoryRepository)
-    public categoryRepository: CategoryRepository,
+
+    @inject('services.BookService')
+    public bookService: BookService,
   ) {}
-
-  validateISBN(isbn: string): boolean {
-    return /^\d{13}$/.test(isbn); // Ensures exactly 13 digits
-  }
-  validateRequiredFields(book: Partial<Book>) {
-    const missingFields: string[] = [];
-    
-    if (!book.title) missingFields.push('title');
-    if (!book.date) missingFields.push('publication_date');
-    if (book.price === undefined) {
-      missingFields.push('price');
-    } else if (book.price <= 0) {
-      throw new HttpErrors.BadRequest('Invalid price: It must be greater than 0.');
-    }
-    if (!book.isbn) missingFields.push('isbn');
-
-    if (missingFields.length > 0) {
-      throw new HttpErrors.BadRequest(`Missing required fields: ${missingFields.join(', ')}`);
-    }
-  }
 
   @post('/books')
   @response(200, {
@@ -69,26 +50,8 @@ export class BookController {
     })
     book: Omit<Book, 'id'>,
   ): Promise<Book> {
-    this.validateRequiredFields(book);
-
-    if (!this.validateISBN(book.isbn)) {
-      throw new HttpErrors.BadRequest('Invalid ISBN: It must be exactly 13 digits.');
-    }
-
-    const authorExists = await this.authorRepository.exists(book.authorId);
-    if (!authorExists) {
-      throw new HttpErrors.BadRequest(`Author with ID ${book.authorId} does not exist.`);
-    }
-
-    const categoryExists = await this.categoryRepository.exists(book.categoryId);
-    if (!categoryExists) {
-      throw new HttpErrors.BadRequest(`Category with ID ${book.categoryId} does not exist.`);
-    }
-
-    const existingBook = await this.bookRepository.findOne({where: {isbn: book.isbn}});
-    if (existingBook) {
-      throw new HttpErrors.BadRequest(`A book with ISBN ${book.isbn} already exists.`);
-    }
+    this.bookService.validateRequiredFields(book);
+    await this.bookService.validateBookConstraints(book);
 
     return this.bookRepository.create(book);
   }
@@ -119,7 +82,23 @@ export class BookController {
   async find(
     @param.filter(Book) filter?: Filter<Book>,
   ): Promise<Book[]> {
-    return this.bookRepository.find(filter);
+    return this.bookRepository.find({
+      ...filter,
+      include:[
+        {
+          relation: 'author',
+          scope: {
+            fields: ['name']
+          }
+        },
+        {
+          relation: 'category',
+          scope: {
+            fields: ['genre']
+          }
+        }
+      ]
+    });
   }
 
   @patch('/books')
@@ -154,7 +133,23 @@ export class BookController {
     @param.path.number('id') id: number,
     @param.filter(Book, {exclude: 'where'}) filter?: FilterExcludingWhere<Book>
   ): Promise<Book> {
-    return this.bookRepository.findById(id, filter);
+    return this.bookRepository.findById(id,{
+      ...filter,
+      include:[
+        {
+          relation: 'author',
+          scope: {
+            fields: ['name']
+          }
+        },
+        {
+          relation: 'category',
+          scope: {
+            fields: ['genre']
+          }
+        }
+      ]
+    });
   }
 
   @patch('/books/{id}')
@@ -172,9 +167,9 @@ export class BookController {
     })
     book: Book,
   ): Promise<void> {
-    this.validateRequiredFields(book);
+    this.bookService.validateRequiredFields(book);
 
-    if (book.isbn && !this.validateISBN(book.isbn)) {
+    if (book.isbn && !this.bookService.validateISBN(book.isbn)) {
       throw new HttpErrors.BadRequest('Invalid ISBN: It must be exactly 13 digits.');
     }
     await this.bookRepository.updateById(id, book);

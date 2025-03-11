@@ -1,5 +1,6 @@
 import {BootMixin} from '@loopback/boot';
 import {ApplicationConfig} from '@loopback/core';
+import { BookService } from './services/book.service';
 import {
   RestExplorerBindings,
   RestExplorerComponent,
@@ -31,6 +32,10 @@ export class BmsApplication extends BootMixin(
     this.component(RestExplorerComponent);
 
     this.projectRoot = __dirname;
+
+    // Bind the BookService
+    this.bind('services.BookService').toClass(BookService);
+
     // Customize @loopback/boot Booter Conventions here
     this.bootOptions = {
       controllers: {
