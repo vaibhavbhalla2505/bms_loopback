@@ -8,7 +8,7 @@ export class Category extends Entity {
     id: true,
     generated: true,
   })
-  category_id?: number;
+  id?: number;
 
   @property({
     type: 'string',

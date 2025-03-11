@@ -6,17 +6,17 @@ import {BookRepository} from './book.repository';
 
 export class AuthorRepository extends DefaultCrudRepository<
   Author,
-  typeof Author.prototype.author_id,
+  typeof Author.prototype.id,
   AuthorRelations
 > {
 
-  public readonly authorID: HasManyRepositoryFactory<Book, typeof Author.prototype.author_id>;
+  public readonly authorId: HasManyRepositoryFactory<Book, typeof Author.prototype.id>;
 
   constructor(
     @inject('datasources.bms') dataSource: BmsDataSource, @repository.getter('BookRepository') protected bookRepositoryGetter: Getter<BookRepository>,
   ) {
     super(Author, dataSource);
-    this.authorID = this.createHasManyRepositoryFactoryFor('authorID', bookRepositoryGetter,);
-    this.registerInclusionResolver('authorID', this.authorID.inclusionResolver);
+    this.authorId = this.createHasManyRepositoryFactoryFor('authorId', bookRepositoryGetter,);
+    this.registerInclusionResolver('authorId', this.authorId.inclusionResolver);
   }
 }

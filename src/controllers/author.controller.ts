@@ -37,12 +37,12 @@ export class AuthorController {
         'application/json': {
           schema: getModelSchemaRef(Author, {
             title: 'NewAuthor',
-            exclude: ['author_id'],
+            exclude: ['id'],
           }),
         },
       },
     })
-    author: Omit<Author, 'author_id'>,
+    author: Omit<Author, 'id'>,
   ): Promise<Author> {
     return this.authorRepository.create(author);
   }

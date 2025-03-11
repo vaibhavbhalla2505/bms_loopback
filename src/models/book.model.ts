@@ -9,7 +9,7 @@ export class Book extends Entity {
     id: true,
     generated: true,
   })
-  book_id?: number;
+  id?: number;
 
   @property({
     type: 'string',
@@ -27,14 +27,13 @@ export class Book extends Entity {
     type: 'date',
     required: true,
   })
-  publication_date: string;
+  date: string;
 
   @property({
     type: 'number',
     required: true,
   })
   price: number;
-
   @belongsTo(() => Author)
   authorId: number;
 

@@ -7,13 +7,13 @@ import {CategoryRepository} from './category.repository';
 
 export class BookRepository extends DefaultCrudRepository<
   Book,
-  typeof Book.prototype.book_id,
+  typeof Book.prototype.id,
   BookRelations
 > {
 
-  public readonly author: BelongsToAccessor<Author, typeof Book.prototype.book_id>;
+  public readonly author: BelongsToAccessor<Author, typeof Book.prototype.id>;
 
-  public readonly category: BelongsToAccessor<Category, typeof Book.prototype.book_id>;
+  public readonly category: BelongsToAccessor<Category, typeof Book.prototype.id>;
 
   constructor(
     @inject('datasources.bms') dataSource: BmsDataSource, @repository.getter('AuthorRepository') protected authorRepositoryGetter: Getter<AuthorRepository>, @repository.getter('CategoryRepository') protected categoryRepositoryGetter: Getter<CategoryRepository>,

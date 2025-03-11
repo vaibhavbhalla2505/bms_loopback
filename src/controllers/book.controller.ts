@@ -38,7 +38,7 @@ export class BookController {
     const missingFields: string[] = [];
     
     if (!book.title) missingFields.push('title');
-    if (!book.publication_date) missingFields.push('publication_date');
+    if (!book.date) missingFields.push('publication_date');
     if (book.price === undefined) {
       missingFields.push('price');
     } else if (book.price <= 0) {
@@ -50,25 +50,25 @@ export class BookController {
       throw new HttpErrors.BadRequest(`Missing required fields: ${missingFields.join(', ')}`);
     }
   }
-  @post('/books', {
-    responses: {
-      '200': {
-        description: 'Book model instance',
-        content: {'application/json': {schema: getModelSchemaRef(Book)}},
-      },
-    },
+
+  @post('/books')
+  @response(200, {
+    description: 'Book model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Book)}},
   })
   async create(
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(Book, {exclude: ['book_id']}),
+          schema: getModelSchemaRef(Book, {
+            title: 'NewBook',
+            exclude: ['id'],
+          }),
         },
       },
     })
-    book: Omit<Book, 'book_id'>,
+    book: Omit<Book, 'id'>,
   ): Promise<Book> {
-
     this.validateRequiredFields(book);
 
     if (!this.validateISBN(book.isbn)) {
@@ -177,7 +177,6 @@ export class BookController {
     if (book.isbn && !this.validateISBN(book.isbn)) {
       throw new HttpErrors.BadRequest('Invalid ISBN: It must be exactly 13 digits.');
     }
-
     await this.bookRepository.updateById(id, book);
   }
 

@@ -8,16 +8,16 @@ export class Author extends Entity {
     id: true,
     generated: true,
   })
-  author_id?: number;
+  id?: number;
 
   @property({
     type: 'string',
     required: true,
   })
-  author_name: string;
+  name: string;
 
   @hasMany(() => Book)
-  authorID: Book[];
+  authorId: Book[];
 
   constructor(data?: Partial<Author>) {
     super(data);
