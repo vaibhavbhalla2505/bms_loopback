@@ -20,7 +20,7 @@ import {
 } from '@loopback/rest';
 import {Book} from '../models';
 import {BookRepository,AuthorRepository,CategoryRepository} from '../repositories';
-import {inject} from '@loopback/core';
+import { service } from '@loopback/core';
 import { BookService } from '../services/book.service';
 
 export class BookController {
@@ -28,7 +28,7 @@ export class BookController {
     @repository(BookRepository)
     public bookRepository : BookRepository,
 
-    @inject('services.BookService')
+    @service(BookService)
     public bookService: BookService,
   ) {}
 

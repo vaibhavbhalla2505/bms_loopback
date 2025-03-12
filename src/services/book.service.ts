@@ -15,7 +15,7 @@ export class BookService {
   ) {}
 
   validateISBN(isbn: string): boolean {
-    return /^\d{13}$/.test(isbn); // Ensures exactly 13 digits
+    return /^\d{13}$/.test(isbn);
   }
 
   validateRequiredFields(book: Partial<Book>) {
