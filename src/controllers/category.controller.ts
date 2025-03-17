@@ -16,14 +16,20 @@ import {
   del,
   requestBody,
   response,
+  HttpErrors
 } from '@loopback/rest';
 import {Category} from '../models';
+import { service } from '@loopback/core';
 import {CategoryRepository} from '../repositories';
+import { CategoryService } from '../services/category.service';
 
 export class CategoryController {
   constructor(
     @repository(CategoryRepository)
     public categoryRepository : CategoryRepository,
+
+    @service(CategoryService)
+    public categoryService:CategoryService
   ) {}
 
   @post('/categories')
@@ -44,6 +50,9 @@ export class CategoryController {
     })
     category: Omit<Category, 'id'>,
   ): Promise<Category> {
+    if(!this.categoryService.validateGenre(category.genre)){
+      throw new HttpErrors.BadRequest('Genre must be atleast 5 charcters and only contains letters and spaces')
+    }
     return this.categoryRepository.create(category);
   }
 
@@ -126,6 +135,9 @@ export class CategoryController {
     })
     category: Category,
   ): Promise<void> {
+    if (category.genre && !this.categoryService.validateGenre(category.genre)) {
+      throw new HttpErrors.BadRequest('Genre must be at least 5 characters and contain only letters and spaces.');
+    }
     await this.categoryRepository.updateById(id, category);
   }
 
@@ -137,6 +149,9 @@ export class CategoryController {
     @param.path.number('id') id: number,
     @requestBody() category: Category,
   ): Promise<void> {
+    if (category.genre && !this.categoryService.validateGenre(category.genre)) {
+      throw new HttpErrors.BadRequest('Genre must be at least 5 characters and contain only letters and spaces.');
+    }
     await this.categoryRepository.replaceById(id, category);
   }
 

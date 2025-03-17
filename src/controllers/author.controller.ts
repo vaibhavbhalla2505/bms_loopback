@@ -16,14 +16,20 @@ import {
   del,
   requestBody,
   response,
+  HttpErrors
 } from '@loopback/rest';
 import {Author} from '../models';
 import {AuthorRepository} from '../repositories';
+import { service } from '@loopback/core';
+import { AuthorService } from '../services/author.service';
 
 export class AuthorController {
   constructor(
     @repository(AuthorRepository)
     public authorRepository : AuthorRepository,
+
+    @service(AuthorService)
+    public authorService:AuthorService
   ) {}
 
   @post('/authors')
@@ -44,6 +50,10 @@ export class AuthorController {
     })
     author: Omit<Author, 'id'>,
   ): Promise<Author> {
+
+    if(!this.authorService.validateName(author.name)){
+      throw new HttpErrors.BadRequest('Author name must be atleast 3 charcters and only contains letters and spaces')
+    }
     return this.authorRepository.create(author);
   }
 
@@ -126,6 +136,9 @@ export class AuthorController {
     })
     author: Author,
   ): Promise<void> {
+    if (author.name && !this.authorService.validateName(author.name)) {
+      throw new HttpErrors.BadRequest('Author name must be at least 3 characters and contain only letters and spaces.');
+    }
     await this.authorRepository.updateById(id, author);
   }
 
@@ -137,6 +150,9 @@ export class AuthorController {
     @param.path.number('id') id: number,
     @requestBody() author: Author,
   ): Promise<void> {
+    if (!this.authorService.validateName(author.name)) {
+      throw new HttpErrors.BadRequest('Author name must be at least 3 characters and contain only letters and spaces.');
+    }
     await this.authorRepository.replaceById(id, author);
   }
 
