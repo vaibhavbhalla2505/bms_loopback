@@ -1,9 +1,9 @@
-import {inject, injectable} from '@loopback/core';
+import {inject,bind,BindingScope} from '@loopback/core';
 import {HttpErrors} from '@loopback/rest';
 import {BookRepository, AuthorRepository, CategoryRepository} from '../repositories';
 import {Book} from '../models';
 
-@injectable()
+@bind({scope: BindingScope.SINGLETON})
 export class BookService {
   constructor(
     @inject('repositories.BookRepository')

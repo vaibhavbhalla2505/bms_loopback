@@ -1,8 +1,8 @@
-import {inject, injectable} from '@loopback/core';
+import {inject, bind,BindingScope} from '@loopback/core';
 import {HttpErrors} from '@loopback/rest';
 import {Book} from '../models';
 
-@injectable()
+@bind({scope: BindingScope.SINGLETON})
 export class CategoryService{
   constructor(
   ){}
