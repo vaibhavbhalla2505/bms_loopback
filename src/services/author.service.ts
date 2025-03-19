@@ -1,6 +1,5 @@
 import {inject,bind,BindingScope} from '@loopback/core';
 import {HttpErrors} from '@loopback/rest';
-import {Book} from '../models';
 
 @bind({scope: BindingScope.SINGLETON})
 export class AuthorService{

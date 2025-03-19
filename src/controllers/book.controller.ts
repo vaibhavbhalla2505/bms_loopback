@@ -22,6 +22,10 @@ import {Book} from '../models';
 import {BookRepository,AuthorRepository,CategoryRepository} from '../repositories';
 import { service } from '@loopback/core';
 import { BookService } from '../services/book.service';
+type BookWithRelations = Book & {
+  author?: { name: string };
+  category?: { genre: string };
+};
 
 export class BookController {
   constructor(
@@ -79,26 +83,34 @@ export class BookController {
       },
     },
   })
-  async find(
-    @param.filter(Book) filter?: Filter<Book>,
-  ): Promise<Book[]> {
-    return this.bookRepository.find({
+  async find(@param.filter(Book) filter?: Filter<Book>): Promise<any[]> {
+    const books: BookWithRelations[] = await this.bookRepository.find({
       ...filter,
-      include:[
+      include: [
         {
           relation: 'author',
           scope: {
-            fields: ['name']
-          }
+            fields: { name: true },
+          },
         },
         {
           relation: 'category',
           scope: {
-            fields: ['genre']
-          }
-        }
-      ]
+            fields: { genre: true },
+          },
+        },
+      ],
     });
+  
+    return books.map(book => ({
+      id: book.id,
+      title: book.title,
+      isbn: book.isbn,
+      publication_date: book.date,
+      price: book.price,
+      author: book.author?.name,
+      genre: book.category?.genre,
+    }));
   }
 
   @patch('/books')
